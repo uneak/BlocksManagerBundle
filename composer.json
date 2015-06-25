@@ -1,0 +1,28 @@
+{
+    "name": "uneak/blocksmanager-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony BlocksManagerBundle",
+    "keywords": ["assets", "block", "manager"],
+    "homepage": "https://github.com/uneak/BlocksManagerBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marc Galoyer",
+            "email": "mgaloyer@uneak.fr",
+            "homepage": "http://www.uneak.fr"
+        }
+    ],
+
+    "require": {
+        "php": ">=5.3.2",
+        "symfony/framework-bundle": "~2.1"
+    },
+    "require-dev": {
+        "symfony/yaml": "~2.1"
+    },
+    "autoload": {
+        "psr-0": { "Uneak\\BlocksManagerBundle": "" }
+    },
+    "target-dir": "Uneak/BlocksManagerBundle",
+    "minimum-stability": "dev"
+}
