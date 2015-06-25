@@ -1,6 +1,6 @@
 <?php
 
-namespace Uneak\AssetsManagerBundle;
+namespace Uneak\BlocksManagerBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
