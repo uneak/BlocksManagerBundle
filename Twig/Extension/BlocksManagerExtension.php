@@ -5,7 +5,7 @@
 	use Twig_Extension;
 	use Twig_Function_Method;
 	use Uneak\BlocksManagerBundle\Blocks\BlockInterface;
-	use Uneak\BlocksManagerBundle\Blocks\BlocksManager;
+	use Uneak\BlocksManagerBundle\Blocks\Block;
 
 	class BlocksManagerExtension extends Twig_Extension {
 
@@ -13,7 +13,7 @@
 		private $environment;
 		private $blocksManager;
 
-		public function __construct(BlocksManager $blocksManager, $twig) {
+		public function __construct(Block $blocksManager, $twig) {
 			$this->blocksManager = $blocksManager;
 			$this->twig = $twig;
 		}
@@ -42,7 +42,6 @@
 			}
 
 			if ($block && $block instanceof BlockInterface) {
-
 				$block->preRender();
 				$parameters = array_merge($parameters, array('item' => $block));
 				return $this->environment->render($block->getTemplate(), $parameters);

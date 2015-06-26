@@ -1,5 +1,5 @@
 parameters:
-    uneak.blocksmanager.class: Uneak\BlocksManagerBundle\Blocks\BlocksManager
+    uneak.blocksmanager.class: Uneak\BlocksManagerBundle\Blocks\Block
     uneak.blocksmanager.twig.extension.class: Uneak\BlocksManagerBundle\Twig\Extension\BlocksManagerExtension
 
 services:
