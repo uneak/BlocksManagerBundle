@@ -45,16 +45,20 @@
 			return $this->data;
 		}
 
-		public function _getJsArray() {
-			$array = array();
-			foreach ($this->data as $key => $value) {
+
+		public function _getJsArray(array $array = null) {
+			$array = (is_null($array)) ? $this->data : $array;
+			$returnArray = array();
+			foreach ($array as $key => $value) {
 				if (!is_null($value)) {
-					$array[$key] = $value;
+					$returnArray[$key] = $value;
 				}
 			}
 
-			$json = json_encode($array);
-			$json = preg_replace("/(?:\"|')##(.*?)##(?:\"|')/", "$1", $json);
+			$json = json_encode($returnArray);
+			$json = preg_replace_callback("/(?:\"|')##(.*?)##(?:\"|')/", function ($matches) {
+				return stripslashes($matches[1]);
+			}, $json);
 			return $json;
 		}
 

@@ -3,6 +3,7 @@
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
 	use Uneak\AssetsManagerBundle\Assets\AssetsComponentNested;
+	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
 	class Block extends AssetsComponentNested implements BlockInterface {
 
@@ -11,12 +12,15 @@
 		protected $metas;
 		protected $blocks = array();
 
-
 		public function __construct() {
 			$this->metas = new Meta($this);
 		}
 
-		public function preRender() {
+		public function render(\Twig_Environment $environment, TemplatesManager $templatesManager, array $options = array()) {
+			$template = (isset($options['template'])) ? $options['template'] : $this->getTemplate();
+			$template = ($templatesManager->has($template)) ? $templatesManager->get($template) : $template;
+			$options = array_merge(array('item' => $this), $options);
+			return $environment->render($template, $options);
 		}
 
 		public function getMetas() {

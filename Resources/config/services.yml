@@ -1,22 +1,26 @@
 parameters:
-    uneak.blocksmanager.class: Uneak\BlocksManagerBundle\Blocks\Block
+    uneak.blocksmanager.class: Uneak\BlocksManagerBundle\Blocks\BlockModel
+    uneak.blocksmanager.templatemanager.class: Uneak\BlocksManagerBundle\Blocks\BlockTemplateManager
     uneak.blocksmanager.twig.extension.class: Uneak\BlocksManagerBundle\Twig\Extension\BlocksManagerExtension
+
 
 services:
 
+    uneak.blocksmanager.templatemanager:
+        class: %uneak.blocksmanager.templatemanager.class%
+
     uneak.blocksmanager:
         class: %uneak.blocksmanager.class%
-        tags:
-            - { name: uneak.assetsmanager.assets }
-
+#        tags:
+#            - { name: uneak.assetsmanager.assets }
 
     uneak.blocksmanager.twig.extension:
         class: %uneak.blocksmanager.twig.extension.class%
         arguments:
             - @uneak.blocksmanager
+            - @uneak.templatesmanager
+            - @uneak.blocksmanager.templatemanager
             - @twig
         tags:
             - { name: twig.extension }
-
-
 

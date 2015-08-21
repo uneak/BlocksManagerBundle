@@ -9,19 +9,33 @@ use Symfony\Component\DependencyInjection\Reference;
 class BlocksCompilerPass implements CompilerPassInterface {
 
     public function process(ContainerBuilder $container) {
-        if ($container->hasDefinition('uneak.blocksmanager') === false) {
+        if ($container->hasDefinition('uneak.blocksmanager') === false || $container->hasDefinition('uneak.blocksmanager.templatemanager') === false) {
             return;
         }
-        $definition = $container->getDefinition('uneak.blocksmanager');
-        $taggedServices = $container->findTaggedServiceIds('uneak.blocksmanager.block');
+
+        $templateManagerDefinition = $container->getDefinition('uneak.blocksmanager.templatemanager');
+        $templateManagerTaggedServices = $container->findTaggedServiceIds('uneak.blocksmanager.template');
+
+        $blockManagerDefinition = $container->getDefinition('uneak.blocksmanager');
+        $BlockManagerTaggedServices = $container->findTaggedServiceIds('uneak.blocksmanager.block');
+
 		
-        foreach ($taggedServices as $id => $tagAttributes) {
+        foreach ($BlockManagerTaggedServices as $id => $tagAttributes) {
             foreach ($tagAttributes as $attributes) {
-                $definition->addMethodCall(
+                $blockManagerDefinition->addMethodCall(
 					'addBlock', array(new Reference($id), $attributes['id'], $attributes['priority'], $attributes['group'])
                 );
             }
         }
+
+        foreach ($templateManagerTaggedServices as $id => $tagAttributes) {
+            foreach ($tagAttributes as $attributes) {
+                $templateManagerDefinition->addMethodCall(
+                    'set', array($attributes['model'], new Reference($id))
+                );
+            }
+        }
+
 
     }
 

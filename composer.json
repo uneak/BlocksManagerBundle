@@ -19,6 +19,7 @@
         "symfony/config": "~2.4",
         "symfony/dependency-injection": "~2.6,>=2.6.2",
         "symfony/http-kernel": "~2.6",
+        "uneak/templatesmanager-bundle": "~0.0",
         "uneak/assetsmanager-bundle": "~0.0"
     },
     "require-dev": {
