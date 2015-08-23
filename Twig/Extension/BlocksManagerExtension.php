@@ -4,9 +4,9 @@
 
 	use Twig_Extension;
 	use Twig_Function_Method;
-	use Uneak\BlocksManagerBundle\Blocks\BlockModel;
 	use Uneak\BlocksManagerBundle\Blocks\BlockModelInterface;
-	use Uneak\BlocksManagerBundle\Blocks\BlockTemplateManager;
+    use Uneak\BlocksManagerBundle\Blocks\BlocksManager;
+    use Uneak\BlocksManagerBundle\Blocks\BlockTemplateManager;
 	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
 	class BlocksManagerExtension extends Twig_Extension {
@@ -17,7 +17,7 @@
 		private $templatesManager;
 		private $blockTemplateManager;
 
-		public function __construct(BlockModel $blocksManager, TemplatesManager $templatesManager, BlockTemplateManager $blockTemplateManager, $twig) {
+		public function __construct(BlocksManager $blocksManager, TemplatesManager $templatesManager, BlockTemplateManager $blockTemplateManager, $twig) {
 			$this->blocksManager = $blocksManager;
 			$this->templatesManager = $templatesManager;
 			$this->blockTemplateManager = $blockTemplateManager;

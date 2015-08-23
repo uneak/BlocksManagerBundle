@@ -16,6 +16,10 @@
 			return $this;
 		}
 
+        public function all() {
+            return $this->blockTemplates;
+        }
+
 		public function get($id) {
 			return (isset($this->blockTemplates[$id])) ? $this->blockTemplates[$id] : null;
 		}

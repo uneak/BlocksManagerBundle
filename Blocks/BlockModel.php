@@ -27,15 +27,6 @@
 			return $this;
 		}
 
-
-		private function _cmp($a, $b) {
-			if ($a['priority'] == $b['priority']) {
-				return 0;
-			}
-			return ($a['priority'] > $b['priority']) ? -1 : 1;
-		}
-
-
 		public function getBlocks($group = null) {
 			if (!$group) {
 				$group = "__undefined";
@@ -92,6 +83,12 @@
 			return $this;
 		}
 
+        private function _cmp($a, $b) {
+            if ($a['priority'] == $b['priority']) {
+                return 0;
+            }
+            return ($a['priority'] > $b['priority']) ? -1 : 1;
+        }
 
 		public function getBlockName() {
 			return "block_model_manager";
