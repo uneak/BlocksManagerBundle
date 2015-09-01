@@ -3,16 +3,19 @@
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
 
-	use Uneak\AssetsManagerBundle\Assets\AssetBuilder;
+	use Uneak\AssetsManagerBundle\Assets\AssetsBuilderManager;
 	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
 	class BlockTemplate implements BlockTemplateInterface {
 
-		public function buildAsset(AssetBuilder $builder, $parameters) {
+		protected $assetsBuilded = false;
+
+		public function buildAsset(AssetsBuilderManager $builder, $parameters) {
 		}
 
-		public function processBuildAssets(AssetBuilder $builder) {
+		public function processBuildAssets(AssetsBuilderManager $builder) {
 			$this->buildAsset($builder, $this);
+			$this->assetsBuilded = true;
 		}
 
 		public function getTemplate() {
@@ -25,4 +28,7 @@
 			return $environment->render($template, $options);
 		}
 
+		public function isAssetsBuilded() {
+			return $this->assetsBuilded;
+		}
 	}

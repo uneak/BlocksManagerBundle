@@ -2,31 +2,31 @@
 
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
-	use Uneak\AssetsManagerBundle\Assets\AssetBuilder;
-    use Uneak\AssetsManagerBundle\Assets\AssetsComponentInterface;
-    use Uneak\AssetsManagerBundle\Assets\AssetsComponentNested;
+    use Uneak\AssetsManagerBundle\Assets\AssetsBuilderInterface;
+    use Uneak\AssetsManagerBundle\Assets\AssetsBuilderManager;
 
-    class BlocksManager extends BlockModel implements AssetsComponentInterface {
+    class BlocksManager extends BlockModel implements AssetsBuilderInterface {
 
         protected $blockTemplateManager;
+        protected $assetsBuilded = false;
 
         public function __construct(BlockTemplateManager $blockTemplateManager) {
             $this->blockTemplateManager = $blockTemplateManager;
         }
 
-        public function buildAsset(AssetBuilder $builder, $parameters) {
+        public function buildAsset(AssetsBuilderManager $builder, $parameters) {
         }
 
-        public function processBuildAssets(AssetBuilder $builder) {
+        public function processBuildAssets(AssetsBuilderManager $builder) {
             $this->fetch($builder, $this);
+            $this->assetsBuilded = true;
         }
 
-        protected function fetch(AssetBuilder $builder, BlockModel $blockModel) {
+        protected function fetch(AssetsBuilderManager $builder, BlockModel $blockModel) {
 
             $blockTemplate = $this->blockTemplateManager->get($blockModel->getBlockName());
             if (null !== $blockTemplate) {
                 $blockTemplate->buildAsset($builder, $blockModel);
-
             }
 
             $blocks = $blockModel->getBlocks();
@@ -38,4 +38,7 @@
 
         }
 
-	}
+        public function isAssetsBuilded() {
+            return $this->assetsBuilded;
+        }
+    }

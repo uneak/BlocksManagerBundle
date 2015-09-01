@@ -2,10 +2,10 @@
 
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
-	use Uneak\AssetsManagerBundle\Assets\AssetsComponentInterface;
+	use Uneak\AssetsManagerBundle\Assets\AssetsBuilderInterface;
 	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
-	interface BlockInterface extends AssetsComponentInterface {
+	interface BlockInterface extends AssetsBuilderInterface {
 		public function getMetas();
 		public function getTemplate();
 		public function setTemplate($template);

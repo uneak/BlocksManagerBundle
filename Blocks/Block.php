@@ -2,10 +2,10 @@
 
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
-	use Uneak\AssetsManagerBundle\Assets\AssetsComponentNested;
+	use Uneak\AssetsManagerBundle\Assets\AssetsBuilderNested;
 	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
-	class Block extends AssetsComponentNested implements BlockInterface {
+	class Block extends AssetsBuilderNested implements BlockInterface {
 
 		protected $title;
 		protected $template;
@@ -74,7 +74,7 @@
 			}
 			uasort($this->blocks[$group], array($this, "_cmp"));
 
-			$this->addAssetsComponent($block);
+			$this->addAssetsBuilder($block);
 			return $this;
 		}
 
@@ -129,7 +129,7 @@
 			}
 
 			if (isset($this->blocks[$group][$id])) {
-				$this->removeAssetsComponent($this->blocks[$group][$id]['block']);
+				$this->removeAssetsBuilder($this->blocks[$group][$id]['block']);
 				unset($this->blocks[$group][$id]);
 			}
 
@@ -139,7 +139,7 @@
 		public function clearBlocks($group) {
 			if (isset($this->blocks[$group])) {
 				foreach ($this->blocks[$group] as $blockArray) {
-					$this->removeAssetsComponent($blockArray['block']);
+					$this->removeAssetsBuilder($blockArray['block']);
 				}
 				unset($this->blocks[$group]);
 			}
