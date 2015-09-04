@@ -3,6 +3,7 @@
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
 
+	use Symfony\Component\OptionsResolver\OptionsResolver;
 	use Uneak\AssetsManagerBundle\Assets\AssetsBuilderManager;
 	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
@@ -18,17 +19,18 @@
 			$this->assetsBuilded = true;
 		}
 
-		public function getTemplate() {
-			return "block_template_abstract";
+		public function configureOptions(OptionsResolver $resolver) {
 		}
 
-		public function render(\Twig_Environment $environment, TemplatesManager $templatesManager, array $options = array()) {
-			$template = (isset($options['template'])) ? $options['template'] : $this->getTemplate();
-			$template = ($templatesManager->has($template)) ? $templatesManager->get($template) : $template;
-			return $environment->render($template, $options);
+		public function buildOptions(TemplatesManager $templatesManager, $block, array &$options) {
+			$options = array_merge($options, array('item' => $block));
 		}
 
 		public function isAssetsBuilded() {
 			return $this->assetsBuilded;
+		}
+
+		public function getRenderTemplate() {
+			return "block_template_abstract";
 		}
 	}

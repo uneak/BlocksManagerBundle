@@ -4,7 +4,7 @@
 
 
 	interface BlockModelInterface {
-		public function getBlockName();
+		public function getTemplateName();
 		public function addBlock(BlockModelInterface $block, $id = null, $priority = 0, $group = null);
 		public function getBlocks($group = null);
 		public function getBlock($id, $group = null);

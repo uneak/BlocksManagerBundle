@@ -24,7 +24,7 @@
 
         protected function fetch(AssetsBuilderManager $builder, BlockModel $blockModel) {
 
-            $blockTemplate = $this->blockTemplateManager->get($blockModel->getBlockName());
+            $blockTemplate = $this->blockTemplateManager->get($blockModel->getTemplateName());
             if (null !== $blockTemplate) {
                 $blockTemplate->buildAsset($builder, $blockModel);
             }

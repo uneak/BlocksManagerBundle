@@ -90,7 +90,7 @@
             return ($a['priority'] > $b['priority']) ? -1 : 1;
         }
 
-		public function getBlockName() {
+		public function getTemplateName() {
 			return "block_model_manager";
 		}
 	}

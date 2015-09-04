@@ -31,7 +31,7 @@ class BlocksCompilerPass implements CompilerPassInterface {
         foreach ($templateManagerTaggedServices as $id => $tagAttributes) {
             foreach ($tagAttributes as $attributes) {
                 $templateManagerDefinition->addMethodCall(
-                    'set', array($attributes['model'], new Reference($id))
+                    'set', array($attributes['alias'], new Reference($id))
                 );
             }
         }
