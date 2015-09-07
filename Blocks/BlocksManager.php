@@ -2,43 +2,41 @@
 
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
-    use Uneak\AssetsManagerBundle\Assets\AssetsBuilderInterface;
-    use Uneak\AssetsManagerBundle\Assets\AssetsBuilderManager;
 
-    class BlocksManager extends BlockModel implements AssetsBuilderInterface {
 
-        protected $blockTemplateManager;
-        protected $assetsBuilded = false;
+    class BlocksManager {
 
-        public function __construct(BlockTemplateManager $blockTemplateManager) {
-            $this->blockTemplateManager = $blockTemplateManager;
+        protected $blocks = array();
+
+        public function __construct() {
         }
 
-        public function buildAsset(AssetsBuilderManager $builder, $parameters) {
-        }
-
-        public function processBuildAssets(AssetsBuilderManager $builder) {
-            $this->fetch($builder, $this);
-            $this->assetsBuilded = true;
-        }
-
-        protected function fetch(AssetsBuilderManager $builder, BlockModel $blockModel) {
-
-            $blockTemplate = $this->blockTemplateManager->get($blockModel->getTemplateName());
-            if (null !== $blockTemplate) {
-                $blockTemplate->buildAsset($builder, $blockModel);
+        public function addBlock($id, BlockModelInterface $block, $override = true) {
+            if ($override || !isset($this->blocks[$id])) {
+                $this->blocks[$id] = $block;
             }
-
-            $blocks = $blockModel->getBlocks();
-            if (null !== $blocks) {
-                foreach ($blocks as $block) {
-                    $this->fetch($builder, $block);
-                }
-            }
-
+            return $this;
         }
 
-        public function isAssetsBuilded() {
-            return $this->assetsBuilded;
+        public function setBlocks(array $blocks) {
+            $this->blocks = $blocks;
         }
+
+        public function getBlocks() {
+            return $this->blocks;
+        }
+
+        public function getBlock($id) {
+            return (isset($this->blocks[$id])) ? $this->blocks[$id] : null;
+        }
+
+        public function hasBlock($id) {
+            return isset($this->blocks[$id]);
+        }
+
+        public function removeBlock($id) {
+            unset($this->blocks[$id]);
+            return $this;
+        }
+
     }

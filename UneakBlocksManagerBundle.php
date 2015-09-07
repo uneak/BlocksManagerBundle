@@ -4,13 +4,15 @@ namespace Uneak\BlocksManagerBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Uneak\BlocksManagerBundle\DependencyInjection\Compiler\BlocksCompilerPass;
+use Uneak\BlocksManagerBundle\DependencyInjection\Compiler\BlocksManagerCompilerPass;
+use Uneak\BlocksManagerBundle\DependencyInjection\Compiler\BlockTemplatesManagerCompilerPass;
 
 class UneakBlocksManagerBundle extends Bundle {
 
 	public function build(ContainerBuilder $container) {
 		parent::build($container);
-		$container->addCompilerPass(new BlocksCompilerPass());
+		$container->addCompilerPass(new BlockTemplatesManagerCompilerPass());
+		$container->addCompilerPass(new BlocksManagerCompilerPass());
 	}
 
 }

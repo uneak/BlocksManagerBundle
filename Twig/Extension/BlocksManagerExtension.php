@@ -5,23 +5,23 @@
 	use Symfony\Component\OptionsResolver\OptionsResolver;
 	use Twig_Extension;
 	use Twig_Function_Method;
-	use Uneak\BlocksManagerBundle\Blocks\BlockModelInterface;
-    use Uneak\BlocksManagerBundle\Blocks\BlocksManager;
-    use Uneak\BlocksManagerBundle\Blocks\BlockTemplateManager;
+    use Uneak\BlocksManagerBundle\Blocks\BlockBuilder;
+    use Uneak\BlocksManagerBundle\Blocks\BlockModelInterface;
+    use Uneak\BlocksManagerBundle\Blocks\BlockTemplatesManager;
 	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
 	class BlocksManagerExtension extends Twig_Extension {
 
 		private $twig;
 		private $environment;
-		private $blocksManager;
+		private $blockBuilder;
 		private $templatesManager;
-		private $blockTemplateManager;
+		private $blockTemplatesManager;
 
-		public function __construct(BlocksManager $blocksManager, TemplatesManager $templatesManager, BlockTemplateManager $blockTemplateManager, $twig) {
-			$this->blocksManager = $blocksManager;
+		public function __construct(BlockBuilder $blockBuilder, BlockTemplatesManager $blockTemplatesManager, TemplatesManager $templatesManager, $twig) {
+			$this->blockBuilder = $blockBuilder;
 			$this->templatesManager = $templatesManager;
-			$this->blockTemplateManager = $blockTemplateManager;
+			$this->blockTemplatesManager = $blockTemplatesManager;
 			$this->twig = $twig;
 		}
 
@@ -40,7 +40,7 @@
 		}
 
 		public function hasBlockFunction($block, $group = null) {
-			return $this->blocksManager->hasBlock($block, $group);
+			return $this->blockBuilder->hasBlock($block, $group);
 		}
 
 		public function renderBlockFunction($block, $options = null, $template = null) {
@@ -51,12 +51,12 @@
 				if (is_string($block)) {
 					$blockName = $block;
 					$groupName = null;
-					$blockObject = $this->blocksManager->getBlock($blockName, $groupName);
+					$blockObject = $this->blockBuilder->getBlock($blockName);
 
 				} else if (is_array($block)) {
 					$blockName = (isset($block[0]) && is_string($block[0])) ? $block[0] : null;
 					$groupName = (isset($block[1]) && is_string($block[1])) ? $block[1] : null;
-					$blockObject = $this->blocksManager->getBlock($blockName, $groupName);
+					$blockObject = $this->blockBuilder->getBlock($blockName, $groupName);
 
 				} else {
 					$blockObject = $block;
@@ -75,7 +75,7 @@
 					$options = (is_null($options)) ? array() : $options;
 				}
 
-				$template = (is_null($template)) ? $blockObject->getTemplateName() : $template;
+				$template = (is_null($template)) ? $blockObject->getTemplateAlias() : $template;
 
 			} else {
 				// is options
@@ -96,10 +96,10 @@
 
 		public function renderBlockManagerFunction($group, $separator = "") {
 			$htmls = array();
-			$blocks = $this->blocksManager->getBlocks($group);
+			$blocks = $this->blockBuilder->getBlocks($group);
 			if ($blocks) {
 				foreach ($blocks as $block) {
-					$htmls[] = $this->_renderBlock($block, array(), $block->getTemplateName());
+					$htmls[] = $this->_renderBlock($block, array(), $block->getTemplateAlias());
 				}
 			}
 
@@ -110,7 +110,7 @@
 
 		private function _renderBlock($blockObject, array $options, $template) {
 
-			if (null === $blockTemplate = $this->blockTemplateManager->get($template)) {
+			if (null === $blockTemplate = $this->blockTemplatesManager->getTemplate($template)) {
 				// TODO: trow Exception
 				return '[ERREUR] no block template found for '.$template;
 			}
@@ -123,7 +123,7 @@
 			$blockTemplate->buildOptions($this->templatesManager, $blockObject, $options);
 
 			$renderTemplate = (isset($options['template'])) ? $options['template'] : $blockTemplate->getRenderTemplate();
-			$renderTemplate = ($this->templatesManager->has($renderTemplate)) ? $this->templatesManager->get($renderTemplate) : $renderTemplate;
+			$renderTemplate = ($this->templatesManager->hasTemplate($renderTemplate)) ? $this->templatesManager->getTemplate($renderTemplate) : $renderTemplate;
 			return $this->environment->render($renderTemplate, $options);
 		}
 
