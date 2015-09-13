@@ -57,6 +57,19 @@
 			return null;
 		}
 
+        public function getAllBlocks() {
+
+            $array = array();
+            foreach ($this->blocks as $group => $blocks) {
+                foreach ($blocks as $key => $block) {
+                    $array[] = $block['block'];
+                }
+
+            }
+
+            return $array;
+        }
+
 		public function getBlock($id, $group = null) {
 			if (!$group) {
 				$group = "__undefined";

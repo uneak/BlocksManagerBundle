@@ -116,7 +116,6 @@
 
         private function _fetchAssets(AssetsBuilderManager $builder, $blockModel) {
 
-
             $blockModel = $this->_blockResolver($blockModel);
 
             $blockTemplate = $this->blockTemplatesManager->getTemplate($blockModel->getTemplateAlias());
@@ -125,12 +124,12 @@
                 $blockTemplate->buildAsset($builder, $blockModel);
             }
 
-            $blocks = $blockModel->getBlocks();
-            if (null !== $blocks) {
+            $blocks = $blockModel->getAllBlocks();
+//            if (null !== $blocks) {
                 foreach ($blocks as $block) {
                     $this->_fetchAssets($builder, $block);
                 }
-            }
+//            }
         }
 
 

@@ -10,6 +10,7 @@
 
 		public function addBlock($block, $id = null, $priority = 0, $group = null);
 		public function getBlocks($group = null);
+        public function getAllBlocks();
 		public function getBlock($id, $group = null);
 		public function hasBlock($id, $group = null);
 		public function removeBlock($id, $group = null);
