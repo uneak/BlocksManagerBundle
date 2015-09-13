@@ -16,6 +16,7 @@ services:
     uneak.blocksmanager.builder:
         class: %uneak.blocksmanager.builder.class%
         arguments:
+            - @uneak.templatesmanager
             - @uneak.blocksmanager.blocks
             - @uneak.blocksmanager.templates
             - @service_container

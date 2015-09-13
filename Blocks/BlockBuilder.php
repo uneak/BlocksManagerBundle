@@ -6,9 +6,11 @@
     use Uneak\AssetsManagerBundle\Assets\AssetsBuilder;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\DependencyInjection\ContainerInterface;
+    use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
     class BlockBuilder extends AssetsBuilder {
 
+        protected $templatesManager;
         protected $blockTemplatesManager;
         protected $blocksManager;
         protected $container;
@@ -16,7 +18,8 @@
 //        protected $blocksBuilded = true;
 
 
-        public function __construct(BlocksManager $blocksManager, BlockTemplatesManager $blockTemplatesManager, ContainerInterface $container) {
+        public function __construct(TemplatesManager $templatesManager,BlocksManager $blocksManager, BlockTemplatesManager $blockTemplatesManager, ContainerInterface $container) {
+            $this->templatesManager = $templatesManager;
             $this->blockTemplatesManager = $blockTemplatesManager;
             $this->container = $container;
             $this->blocksManager = $blocksManager;

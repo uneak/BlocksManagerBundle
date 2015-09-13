@@ -17,17 +17,26 @@
 				$this->blocks[$group] = array();
 			}
 
-			$groupData = array('block' => $block, 'priority' => $priority);
+            $groupData = array();
+            $groupData['priority'] = $priority;
+            if (is_array($block)) {
+                $groupData['block'] = $block[0];
+                if (count($block) >= 2) {
+                    $groupData['template'] = $block[1];
+                }
+            } else {
+                $groupData['block'] = $block;
+            }
+
+            if (is_string($groupData['block'])) {
+                $this->blocksBuilded = false;
+            }
 
 			if ($id) {
 				$this->blocks[$group][$id] = $groupData;
 			} else {
 				$this->blocks[$group][] = $groupData;
 			}
-
-            if (is_string($block)) {
-                $this->blocksBuilded = false;
-            }
 
 			return $this;
 		}
@@ -100,7 +109,14 @@
                     if (!$blockModel instanceof BlockModel) {
                         // TODO: exeption
                     }
+
+                    if (isset($block['template'])) {
+                        $blockModel->setTemplateAlias($block['template']);
+                        unset($this->blocks[$group][$id]['template']);
+                    }
+
                     $this->blocks[$group][$id]['block'] = $blockModel;
+
                     $blockModel->processBuildBlocks($blocksManager);
                 }
             }
