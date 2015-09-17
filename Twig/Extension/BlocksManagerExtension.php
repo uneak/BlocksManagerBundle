@@ -6,7 +6,7 @@
 	use Twig_Extension;
 	use Twig_Function_Method;
     use Uneak\BlocksManagerBundle\Blocks\BlockBuilder;
-    use Uneak\BlocksManagerBundle\Blocks\BlockModelInterface;
+    use Uneak\BlocksManagerBundle\Blocks\BlockInterface;
     use Uneak\BlocksManagerBundle\Blocks\BlockTemplatesManager;
 	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
@@ -45,7 +45,7 @@
 
 		public function renderBlockFunction($block, $options = null, $template = null) {
 
-			if ($block instanceOf BlockModelInterface || is_string($block) || (is_array($block) && isset($block[0]))) {
+			if ($block instanceOf BlockInterface || is_string($block) || (is_array($block) && isset($block[0]))) {
 				// is block
 
 				if (is_string($block)) {

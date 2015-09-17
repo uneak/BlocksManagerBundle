@@ -11,7 +11,7 @@
         public function __construct() {
         }
 
-        public function addBlock($id, BlockModelInterface $block, $override = true) {
+        public function addBlock($id, BlockInterface $block, $override = true) {
             if ($override || !isset($this->blocks[$id])) {
                 $this->blocks[$id] = $block;
             }

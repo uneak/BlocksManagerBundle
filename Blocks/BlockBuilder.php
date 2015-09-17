@@ -15,7 +15,6 @@
         protected $blocksManager;
         protected $container;
         protected $blocks = array();
-//        protected $blocksBuilded = true;
 
 
         public function __construct(TemplatesManager $templatesManager,BlocksManager $blocksManager, BlockTemplatesManager $blockTemplatesManager, ContainerInterface $container) {
@@ -30,9 +29,10 @@
             if ($override || !isset($this->blocks[$id])) {
                 $this->blocks[$id] = $block;
             }
-            $blockModel = $this->_blockResolver($block);
 
-            return $blockModel;
+            $block = $this->_blockResolver($block);
+
+            return $block;
         }
 
         public function setBlocks(array $blocks) {
@@ -40,9 +40,9 @@
         }
 
         public function getBlocks() {
-            $blocks = array();
-            foreach ($this->blocks as $id => $blockModel) {
-                $blocks[$id] = $this->_blockResolver($blockModel);
+            foreach ($this->blocks as $id => $block) {
+                $this->blocks[$id] = $this->_blockResolver($block);
+                $this->blocks[$id]->processBuildBlocks($this->blocksManager);
             }
             return $this->blocks;
         }
@@ -52,41 +52,38 @@
             $id = $matches[1];
             $path = (isset($matches[2])) ? $matches[2] : null;
 
-            // ID : "hello"
             if (!isset($this->blocks[$id])) {
                 // TODO: exeption
                 return null;
             }
-            $blockModel = $this->_blockResolver($this->blocks[$id]);
+
+            $block = $this->_blockResolver($this->blocks[$id]);
             if ($path) {
-                $blockModel = $this->_getPath($blockModel, $path);
+                $block = $this->_getPath($block, $path);
             }
 
-            $blockModel->processBuildBlocks($this->blocksManager);
+            $block->processBuildBlocks($this->blocksManager);
 
-            return $blockModel;
+            return $block;
 
         }
 
-        private function _getPath(BlockModelInterface $blockModel, $path) {
+        private function _getPath(BlockInterface $block, $path) {
             preg_match("/([^\\/]*)(?:\\/(.*))?$/", $path, $matches);
             $id = $matches[1];
             $path = (isset($matches[2])) ? $matches[2] : null;
 
-            preg_match("/^([^:]*)(?::(.*))?$/", $id, $matches);
-            $id = $matches[1];
-            $group = (isset($matches[2])) ? $matches[2] : null;
-
-            if (null === $blockModel = $blockModel->getBlock($id, $group)) {
+            if (null === $childBlock = $block->getBlock($id)) {
                 // TODO: exeption
                 return null;
             }
-            $blockModel = $this->_blockResolver($blockModel);
+            $childBlock = $this->_blockResolver($childBlock);
+            $childBlock->setParentBlock($block);
 
             if ($path) {
-                return $this->_getPath($blockModel, $path);
+                return $this->_getPath($childBlock, $path);
             } else {
-                return $blockModel;
+                return $childBlock;
             }
         }
 
@@ -108,40 +105,36 @@
 
 
         public function processBuildAssets(AssetsBuilderManager $builder) {
-            foreach ($this->blocks as $blockModel) {
-                $this->_fetchAssets($builder, $blockModel);
+            $blocks = $this->getBlocks();
+            foreach ($blocks as $block) {
+                $this->_fetchAssets($builder, $block);
             }
             $this->assetsBuilded = true;
         }
 
-        private function _fetchAssets(AssetsBuilderManager $builder, $blockModel) {
-
-            $blockModel = $this->_blockResolver($blockModel);
-
-            $blockTemplate = $this->blockTemplatesManager->getTemplate($blockModel->getTemplateAlias());
+        private function _fetchAssets(AssetsBuilderManager $builder, BlockInterface $block) {
+            $blockTemplate = $this->blockTemplatesManager->getTemplate($block->getTemplateAlias());
 
             if (null !== $blockTemplate) {
-                $blockTemplate->buildAsset($builder, $blockModel);
+                $blockTemplate->buildAsset($builder, $block);
             }
 
-            $blocks = $blockModel->getAllBlocks();
-//            if (null !== $blocks) {
-                foreach ($blocks as $block) {
-                    $this->_fetchAssets($builder, $block);
-                }
-//            }
+            $blocks = $block->getBlocks();
+            foreach ($blocks as $block) {
+                $this->_fetchAssets($builder, $block);
+            }
         }
 
 
 
-        private function _blockResolver($blockModel) {
-            if (is_string($blockModel)) {
-                $blockModel = $this->blocksManager->getBlock($blockModel);
+        private function _blockResolver($block) {
+            if (is_string($block)) {
+                $block = $this->blocksManager->getBlock($block);
             }
-            if (!$blockModel instanceof BlockModel) {
+            if (!$block instanceof Block) {
                 // TODO: exeption
             }
-            return $blockModel;
+            return $block;
         }
 
     }

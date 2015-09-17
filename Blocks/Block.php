@@ -2,149 +2,226 @@
 
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
-	use Uneak\AssetsManagerBundle\Assets\AssetsBuilderNested;
-	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
+	class Block implements BlockInterface {
 
-	class Block extends AssetsBuilderNested implements BlockInterface {
-
-		protected $title;
-		protected $template;
-		protected $metas;
+        private $_idString = "/^([^:]*)(?::(.*))?$/";
 		protected $blocks = array();
+		protected $parentBlock = null;
+        protected $blocksBuilded = true;
+		protected $templateAlias = "block_model_manager";
+        protected $priority = 1000;
 
-		public function __construct() {
-			$this->metas = new Meta($this);
-		}
-
-		public function render(\Twig_Environment $environment, TemplatesManager $templatesManager, array $options = array()) {
-			$template = (isset($options['template'])) ? $options['template'] : $this->getTemplate();
-			$template = ($templatesManager->has($template)) ? $templatesManager->get($template) : $template;
-			$options = array_merge(array('item' => $this), $options);
-			return $environment->render($template, $options);
-		}
-
-		public function getMetas() {
-			return $this->metas;
-		}
-
-		public function getMeta($key) {
-			return $this->metas->__get($key);
-		}
-
-		public function setMeta($key, $value) {
-			$this->metas->__set($key, $value);
-
-			return $this;
-		}
-
-		public function getTemplate() {
-			return $this->template;
-		}
-
-		public function setTemplate($template) {
-			$this->template = $template;
-			return $this;
-		}
-
-		public function getTitle() {
-			return $this->title;
-		}
-
-		public function setTitle($title) {
-			$this->title = $title;
-			return $this;
-		}
+        /**
+         * @return boolean
+         */
+        public function isBlocksBuilded()
+        {
+            return $this->blocksBuilded;
+        }
 
 
-		public function addBlock(BlockInterface $block, $id = null, $priority = 0, $group = null) {
-			if (!$group) {
-				$group = "__undefined";
-			}
+        public function refreshBlocksBuilded()
+        {
+            $blocksBuilded = true;
+            foreach ($this->blocks as $group => $blocksData) {
+                foreach ($blocksData as $id => $blockData) {
+                    if (is_string($blockData['block'])) {
+                        $blocksBuilded = false;
+                        break;
+                    }
+                }
+                if (!$blocksBuilded) {
+                    break;
+                }
+            }
+            if ($this->blocksBuilded != $blocksBuilded) {
+                $this->blocksBuilded = $blocksBuilded;
+                if ($this->parentBlock) {
+                    $this->parentBlock->refreshBlocksBuilded();
+                }
+            }
+
+        }
+
+
+        /**
+         * @return null
+         */
+        public function getParentBlock()
+        {
+            return $this->parentBlock;
+        }
+
+        /**
+         * @param null $parentBlock
+         */
+        public function setParentBlock(BlockInterface $parentBlock)
+        {
+            $this->parentBlock = $parentBlock;
+        }
+
+
+		public function addBlock($block, $id = null, $priority = null) {
+            if ($id) {
+                preg_match($this->_idString, $id, $matches);
+                $id = (isset($matches[1]) && $matches[1]) ? $matches[1] : null;
+                $group = (isset($matches[2]) && $matches[2]) ? $matches[2] : "__undefined";
+            } else {
+                $group = "__undefined";
+            }
 
 			if (!isset($this->blocks[$group])) {
 				$this->blocks[$group] = array();
 			}
 
-			$groupData = array('block' => $block, 'priority' => $priority);
+            $blockData = array();
+            $blockData['priority'] = (is_null($priority)) ? $this->priority-- : $priority;
+            if (is_array($block)) {
+                $blockData['block'] = $block[0];
+                if (count($block) >= 2) {
+                    $blockData['template'] = $block[1];
+                }
+            } else {
+                $blockData['block'] = $block;
+            }
 
 			if ($id) {
-				$this->blocks[$group][$id] = $groupData;
+				$this->blocks[$group][$id] = $blockData;
 			} else {
-				$this->blocks[$group][] = $groupData;
+				$this->blocks[$group][] = $blockData;
 			}
-			uasort($this->blocks[$group], array($this, "_cmp"));
 
-			$this->addAssetsBuilder($block);
+            uasort($this->blocks[$group], array($this, "_cmp"));
+
+            if ($block instanceof Block) {
+                $block->setParentBlock($this);
+            } else {
+                $this->refreshBlocksBuilded();
+            }
+
 			return $this;
 		}
 
 
-		private function _cmp($a, $b) {
-			if ($a['priority'] == $b['priority']) {
-				return 0;
-			}
-			return ($a['priority'] > $b['priority']) ? -1 : 1;
+        public function getBlocks() {
+
+            $array = array();
+            foreach ($this->blocks as $group => $blocks) {
+                foreach ($blocks as $key => $block) {
+                    $array[] = $block['block'];
+                }
+            }
+
+            return $array;
+        }
+
+		public function getBlock($id) {
+            if ($id) {
+                preg_match($this->_idString, $id, $matches);
+                $id = (isset($matches[1]) && $matches[1]) ? $matches[1] : null;
+                $group = (isset($matches[2]) && $matches[2]) ? $matches[2] : "__undefined";
+            } else {
+                $group = "__undefined";
+            }
+
+
+            if ($id) {
+                if (isset($this->blocks[$group][$id])) {
+                    return $this->blocks[$group][$id]['block'];
+                }
+                return null;
+            } else {
+                $array = array();
+                if (isset($this->blocks[$group])) {
+                    foreach ($this->blocks[$group] as $key => $block) {
+                        $array[] = $block['block'];
+                    }
+                }
+                return $array;
+            }
+
 		}
 
-
-		public function getBlocks($group = null) {
-			if (!$group) {
-				$group = "__undefined";
-			}
-
-			if (isset($this->blocks[$group])) {
-				$array = array();
-				foreach ($this->blocks[$group] as $key => $block) {
-					$array[$key] = $block['block'];
-				}
-				return $array;
-			}
-
-			return null;
-		}
-
-		public function getBlock($id, $group = null) {
-			if (!$group) {
-				$group = "__undefined";
-			}
-
-			if (isset($this->blocks[$group][$id])) {
-				return $this->blocks[$group][$id]['block'];
-			}
-
-			return null;
-		}
-
-		public function hasBlock($id, $group = null) {
-			if (!$group) {
-				$group = "__undefined";
-			}
+		public function hasBlock($id) {
+            if ($id) {
+                preg_match($this->_idString, $id, $matches);
+                $id = (isset($matches[1]) && $matches[1]) ? $matches[1] : null;
+                $group = (isset($matches[2]) && $matches[2]) ? $matches[2] : "__undefined";
+            } else {
+                $group = "__undefined";
+            }
 
 			return isset($this->blocks[$group][$id]);
 		}
 
-		public function removeBlock($id, $group = null) {
-			if (!$group) {
-				$group = "__undefined";
-			}
+		public function removeBlock($id) {
+            if ($id) {
+                preg_match($this->_idString, $id, $matches);
+                $id = (isset($matches[1]) && $matches[1]) ? $matches[1] : null;
+                $group = (isset($matches[2]) && $matches[2]) ? $matches[2] : "__undefined";
+            } else {
+                $group = "__undefined";
+            }
 
-			if (isset($this->blocks[$group][$id])) {
-				$this->removeAssetsBuilder($this->blocks[$group][$id]['block']);
-				unset($this->blocks[$group][$id]);
-			}
+
+            if ($id) {
+                if (isset($this->blocks[$group][$id])) {
+                    unset($this->blocks[$group][$id]);
+                }
+            } else {
+                if (isset($this->blocks[$group])) {
+                    unset($this->blocks[$group]);
+                }
+            }
 
 			return $this;
 		}
 
-		public function clearBlocks($group) {
-			if (isset($this->blocks[$group])) {
-				foreach ($this->blocks[$group] as $blockArray) {
-					$this->removeAssetsBuilder($blockArray['block']);
-				}
-				unset($this->blocks[$group]);
-			}
 
-			return $this;
+
+        public function processBuildBlocks(BlocksManager $blocksManager) {
+            if ($this->isBlocksBuilded() == true) {
+                return;
+            }
+
+            foreach ($this->blocks as $group => $blocksData) {
+//                uasort($this->blocks[$group], array($this, "_cmp"));
+                foreach ($blocksData as $id => $blockData) {
+                    $block = (is_string($blockData['block'])) ? $blocksManager->getBlock($blockData['block']) : $blockData['block'];
+                    if (!$block instanceof Block) {
+                        // TODO: exeption
+                    }
+                    $block->setParentBlock($this);
+
+                    if (isset($blockData['template'])) {
+                        $block->setTemplateAlias($blockData['template']);
+                        unset($this->blocks[$group][$id]['template']);
+                    }
+
+                    $this->blocks[$group][$id]['block'] = $block;
+
+                    $block->processBuildBlocks($blocksManager);
+                }
+            }
+
+            $this->refreshBlocksBuilded();
+        }
+
+        private function _cmp($a, $b) {
+            if ($a['priority'] == $b['priority']) {
+                return 0;
+            }
+            return ($a['priority'] > $b['priority']) ? -1 : 1;
+        }
+
+		public function getTemplateAlias() {
+			return $this->templateAlias;
 		}
 
-	}
+        public function setTemplateAlias($blockTemplateAlias) {
+            $this->templateAlias = $blockTemplateAlias;
+            return $this;
+        }
+
+
+    }

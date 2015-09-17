@@ -2,14 +2,19 @@
 
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
-	use Uneak\AssetsManagerBundle\Assets\AssetsBuilderInterface;
-	use Uneak\TemplatesManagerBundle\Templates\TemplatesManager;
 
-	interface BlockInterface extends AssetsBuilderInterface {
-		public function getMetas();
-		public function getTemplate();
-		public function setTemplate($template);
-		public function getTitle();
-		public function setTitle($title);
-		public function render(\Twig_Environment $environment, TemplatesManager $templatesManager, array $options = array());
+	interface BlockInterface {
+        public function processBuildBlocks(BlocksManager $blocksManager);
+		public function getTemplateAlias();
+        public function setTemplateAlias($blockTemplateAlias);
+
+		public function addBlock($block, $id = null, $priority = null);
+        public function getBlocks();
+		public function getBlock($id);
+		public function hasBlock($id);
+		public function removeBlock($id);
+
+        public function isBlocksBuilded();
+        public function refreshBlocksBuilded();
+
 	}
