@@ -9,9 +9,13 @@ services:
 
     uneak.blocksmanager.templates:
         class: %uneak.blocksmanager.templates.class%
+        calls:
+            - [ setContainer, [ @service_container ] ]
 
     uneak.blocksmanager.blocks:
         class: %uneak.blocksmanager.blocks.class%
+        calls:
+            - [ setContainer, [ @service_container ] ]
 
     uneak.blocksmanager.builder:
         class: %uneak.blocksmanager.builder.class%

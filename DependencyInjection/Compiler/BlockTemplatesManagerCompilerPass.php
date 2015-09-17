@@ -17,9 +17,9 @@ class BlockTemplatesManagerCompilerPass implements CompilerPassInterface {
             foreach ($tagAttributes as $attributes) {
                 $override = (isset($attributes['override'])) ? $attributes['override'] : null;
                 if (is_null($override)) {
-                    $definition->addMethodCall('addTemplate', array($attributes['alias'], new Reference($id)));
+                    $definition->addMethodCall('addTemplate', array($attributes['alias'], $id));
                 } else {
-                    $definition->addMethodCall('addTemplate', array($attributes['alias'], new Reference($id), $override));
+                    $definition->addMethodCall('addTemplate', array($attributes['alias'], $id, $override));
                 }
             }
         }

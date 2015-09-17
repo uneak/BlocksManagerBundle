@@ -3,15 +3,13 @@
 	namespace Uneak\BlocksManagerBundle\Blocks;
 
 
+    use Symfony\Component\DependencyInjection\ContainerAware;
 
-    class BlocksManager {
+    class BlocksManager extends ContainerAware {
 
         protected $blocks = array();
 
-        public function __construct() {
-        }
-
-        public function addBlock($id, BlockInterface $block, $override = true) {
+        public function addBlock($id, $block, $override = true) {
             if ($override || !isset($this->blocks[$id])) {
                 $this->blocks[$id] = $block;
             }
@@ -27,7 +25,15 @@
         }
 
         public function getBlock($id) {
-            return (isset($this->blocks[$id])) ? $this->blocks[$id] : null;
+            if (!isset($this->blocks[$id])) {
+                // TODO: execption
+                return null;
+            }
+            if (is_string($this->blocks[$id])) {
+                $this->blocks[$id] = $this->container->get($this->blocks[$id]);
+            }
+
+            return $this->blocks[$id];
         }
 
         public function hasBlock($id) {

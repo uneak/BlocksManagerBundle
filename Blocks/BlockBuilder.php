@@ -29,20 +29,20 @@
             if ($override || !isset($this->blocks[$id])) {
                 $this->blocks[$id] = $block;
             }
-
-            $block = $this->_blockResolver($block);
-
-            return $block;
+            return $this;
         }
 
         public function setBlocks(array $blocks) {
             $this->blocks = $blocks;
+            return $this;
         }
 
         public function getBlocks() {
             foreach ($this->blocks as $id => $block) {
-                $this->blocks[$id] = $this->_blockResolver($block);
-                $this->blocks[$id]->processBuildBlocks($this->blocksManager);
+                $block = $this->_blockResolver($block);
+                $block->processBuildBlocks($this->blocksManager);
+                $this->blocks[$id] = $block;
+
             }
             return $this->blocks;
         }
@@ -104,23 +104,35 @@
         }
 
 
+
+        //
+        //
         public function processBuildAssets(AssetsBuilderManager $builder) {
             $blocks = $this->getBlocks();
+
             foreach ($blocks as $block) {
+//                if (is_string($block)) {
+//                    die($block);
+//                }
                 $this->_fetchAssets($builder, $block);
             }
-            $this->assetsBuilded = true;
         }
 
         private function _fetchAssets(AssetsBuilderManager $builder, BlockInterface $block) {
-            $blockTemplate = $this->blockTemplatesManager->getTemplate($block->getTemplateAlias());
+            if (!$block->isBlockTemplateBuilded()) {
+                $blockTemplate = $this->blockTemplatesManager->getTemplate($block->getTemplateAlias());
 
-            if (null !== $blockTemplate) {
-                $blockTemplate->buildAsset($builder, $block);
+                if (null !== $blockTemplate) {
+                    $blockTemplate->buildAsset($builder, $block);
+                }
+                $block->refreshBlockTemplateBuilded(true);
             }
 
             $blocks = $block->getBlocks();
             foreach ($blocks as $block) {
+//                if (is_string($block)) {
+//                    die($block);
+//                }
                 $this->_fetchAssets($builder, $block);
             }
         }

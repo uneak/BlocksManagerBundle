@@ -17,9 +17,9 @@ class BlocksManagerCompilerPass implements CompilerPassInterface {
             foreach ($tagAttributes as $attributes) {
                 $override = (isset($attributes['override'])) ? $attributes['override'] : null;
                 if (is_null($override)) {
-                    $definition->addMethodCall('addBlock', array($attributes['alias'], new Reference($id)));
+                    $definition->addMethodCall('addBlock', array($attributes['alias'], $id));
                 } else {
-                    $definition->addMethodCall('addBlock', array($attributes['alias'], new Reference($id), $override));
+                    $definition->addMethodCall('addBlock', array($attributes['alias'], $id, $override));
                 }
             }
         }

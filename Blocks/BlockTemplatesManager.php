@@ -4,14 +4,16 @@
 
 
 
-	class BlockTemplatesManager {
+	use Symfony\Component\DependencyInjection\ContainerAware;
+
+    class BlockTemplatesManager extends ContainerAware {
 
 		protected $templates = array();
 
 		public function __construct() {
 		}
 
-        public function addTemplate($id, BlockTemplateInterface $template, $override = true) {
+        public function addTemplate($id, $template, $override = true) {
             if ($override || !isset($this->templates[$id])) {
                 $this->templates[$id] = $template;
             }
@@ -27,7 +29,16 @@
         }
 
         public function getTemplate($id) {
-            return (isset($this->templates[$id])) ? $this->templates[$id] : null;
+
+            if (!isset($this->templates[$id])) {
+                // TODO: execption
+                return null;
+            }
+            if (is_string($this->templates[$id])) {
+                $this->templates[$id] = $this->container->get($this->templates[$id]);
+            }
+
+            return $this->templates[$id];
         }
 
         public function hasTemplate($id) {

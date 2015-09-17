@@ -43,52 +43,21 @@
 			return $this->blockBuilder->hasBlock($block, $group);
 		}
 
-		public function renderBlockFunction($block, $options = null, $template = null) {
+		public function renderBlockFunction($block, array $options = array(), $template = null) {
 
-			if ($block instanceOf BlockInterface || is_string($block) || (is_array($block) && isset($block[0]))) {
-				// is block
 
-				if (is_string($block)) {
-					$blockName = $block;
-					$groupName = null;
-					$blockObject = $this->blockBuilder->getBlock($blockName);
-
-				} else if (is_array($block)) {
-					$blockName = (isset($block[0]) && is_string($block[0])) ? $block[0] : null;
-					$groupName = (isset($block[1]) && is_string($block[1])) ? $block[1] : null;
-					$blockObject = $this->blockBuilder->getBlock($blockName, $groupName);
-
-				} else {
-					$blockObject = $block;
-
-				}
-
-				if ($blockObject === null) {
-					// TODO: trow Exception
-					return '[ERREUR] no block found with '.$blockName.' -> group:'.$groupName;
-				}
-
-				if (is_string($options)) {
-					$template = $options;
-					$options = array();
-				} else {
-					$options = (is_null($options)) ? array() : $options;
-				}
-
-				$template = (is_null($template)) ? $blockObject->getTemplateAlias() : $template;
-
+			if (is_string($block)) {
+				$blockObject = $this->blockBuilder->getBlock($block);
 			} else {
-				// is options
-
-				$template = $options;
-				$options = $block;
-				$blockObject = null;
-
-				if ($template === null) {
-					// TODO: trow Exception
-					return '[ERREUR] no template defined';
-				}
+				$blockObject = $block;
 			}
+
+			if ($blockObject === null) {
+				// TODO: trow Exception
+				return '[ERREUR] no block found'.$block;
+			}
+
+			$template = (is_null($template)) ? $blockObject->getTemplateAlias() : $template;
 
 			return $this->_renderBlock($blockObject, $options, $template);
 
@@ -118,7 +87,6 @@
 			$resolver = new OptionsResolver();
 			$blockTemplate->configureOptions($resolver);
 			$options = $resolver->resolve($options);
-
 
 			$blockTemplate->buildOptions($this->templatesManager, $blockObject, $options);
 

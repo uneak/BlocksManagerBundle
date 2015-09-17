@@ -15,6 +15,9 @@
 		}
 
 		public function processBuildAssets(AssetsBuilderManager $builder) {
+			if ($this->isAssetsBuilded()) {
+				return;
+			}
 			$this->buildAsset($builder, $this);
 			$this->assetsBuilded = true;
 		}
