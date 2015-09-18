@@ -222,9 +222,9 @@
 
 
 		public function processBuildBlocks(BlocksManager $blocksManager) {
-			if ($this->isBlocksBuilded() == true) {
-				return;
-			}
+//			if ($this->isBlocksBuilded() == true) {
+//				return;
+//			}
 
 			foreach ($this->blocks as $group => $blocksData) {
 //                uasort($this->blocks[$group], array($this, "_cmp"));
