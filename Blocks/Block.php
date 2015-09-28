@@ -7,84 +7,63 @@
 		private $_idString = "/^([^:]*)(?::(.*))?$/";
 		protected $blocks = array();
 		protected $parentBlock = null;
-		protected $blocksBuilded = true;
-		protected $templateBuilded = false;
-		protected $blockTemplateBuilded = false;
+
+		protected $templateDirty = true;
+
 		protected $templateAlias = "block_model_manager";
 		protected $priority = 1000;
 
-		/**
-		 * @return boolean
-		 */
-		public function isBlocksBuilded() {
-			return $this->blocksBuilded;
+		protected $debugBuildCount = 0;
+		public function debugBuild() {
+			$this->debugBuildCount++;
 		}
 
-		/**
-		 * @return boolean
-		 */
-		public function isBlockTemplateBuilded() {
-			return $this->blockTemplateBuilded;
-		}
 
-		public function refreshBlockTemplateBuilded($templateBuilded = null) {
-			if (!is_null($templateBuilded)) {
-				$this->templateBuilded = $templateBuilded;
-			} else {
-				$templateBuilded = $this->templateBuilded;
-			}
 
-			if ($templateBuilded) {
-				$blocks = $this->getBlocks();
-				foreach ($blocks as $block) {
-					if (is_string($block) || !$block->isBlockTemplateBuilded()) {
-						$templateBuilded = false;
-						break;
+		public function debug() {
+			$str = "";
+			$str .= " -> processBuild:$this->debugBuildCount ::  count : t:$this->templateDirty";
+			$str .= "</li>";
+			$str .= "<ul>";
+			foreach ($this->blocks as $group => $blocks) {
+				foreach ($blocks as $key => $block) {
+
+
+					$str .= "<li>";
+					$str .= "($group)$key";
+					if ($block['block'] instanceof Block) {
+						$str .= $block['block']->debug();
+					} else {
+						$str .= " '".$block['block']."'";
 					}
+
 				}
 			}
 
-			if ($this->blockTemplateBuilded != $templateBuilded) {
-				$this->blockTemplateBuilded = $templateBuilded;
-				if ($this->parentBlock) {
-					$this->parentBlock->refreshBlockTemplateBuilded();
-				}
-			}
+			$str .= "</ul>";
 
-
-
-		}
-
-		public function setTemplateBuilded($templateBuilded) {
-
-			if ($this->templateBuilded != $templateBuilded) {
-				$this->templateBuilded = $templateBuilded;
-				if ($this->isBlockTemplateBuilded() && $this->parentBlock) {
-					$this->parentBlock->refreshChildTemplateBuilded();
-				}
-			}
-
+			return $str;
 		}
 
 
-		public function refreshBlocksBuilded() {
-			$blocksBuilded = true;
 
-			$blocks = $this->getBlocks();
-			foreach ($blocks as $block) {
-				if (is_string($block)) {
-					$blocksBuilded = false;
-					break;
-				}
-			}
 
-			if ($this->blocksBuilded != $blocksBuilded) {
-				$this->blocksBuilded = $blocksBuilded;
-				if ($this->parentBlock) {
-					$this->parentBlock->refreshBlocksBuilded();
-				}
-			}
+
+		/**
+		 * @return boolean
+		 */
+		public function isTemplateDirty() {
+			return $this->templateDirty;
 		}
+
+		/**
+		 * @param boolean $templateDirty
+		 */
+		public function setTemplateDirty($templateDirty) {
+			$this->templateDirty = $templateDirty;
+		}
+
+
 
 
 		/**
@@ -134,10 +113,8 @@
 
 			uasort($this->blocks[$group], array($this, "_cmp"));
 
-			if ($block instanceof Block) {
-				$block->setParentBlock($this);
-			} else {
-				$this->refreshBlocksBuilded();
+			if ($blockData['block'] instanceof Block) {
+				$blockData['block']->setParentBlock($this);
 			}
 
 			return $this;
@@ -221,38 +198,43 @@
 		}
 
 
+		public function postBuild(BlocksManager $blocksManager) {
+			// hook
+		}
+
 		public function processBuildBlocks(BlocksManager $blocksManager) {
-//			if ($this->isBlocksBuilded() == true) {
-//				return;
-//			}
 
 			foreach ($this->blocks as $group => $blocksData) {
-//                uasort($this->blocks[$group], array($this, "_cmp"));
 				foreach ($blocksData as $id => $blockData) {
 
-					if (is_string($blockData['block'])) {
-						$block = $blocksManager->getBlock($blockData['block']);
+					$block = $blockData['block'];
+
+					if (is_string($block)) {
+						$block = $blocksManager->getBlock($block);
+
+						if (!$block instanceof BlockInterface) {
+							throw new \Exception('block '.$id.' not instance of BlockInterface');
+						}
+
+						$this->blocks[$group][$id]['block'] = $block;
 						$block->setParentBlock($this);
-					} else {
-						$block = $blockData['block'];
+						$block->postBuild($blocksManager);
+
+						//
+						$block->debugBuild();
+
 					}
 
-					if (!$block instanceof BlockInterface) {
-						throw new \Exception('block '.$id.' not instance of BlockInterface');
-					}
 
 					if (isset($blockData['template'])) {
 						$block->setTemplateAlias($blockData['template']);
 						unset($this->blocks[$group][$id]['template']);
 					}
 
-					$this->blocks[$group][$id]['block'] = $block;
-
 					$block->processBuildBlocks($blocksManager);
 				}
 			}
 
-			$this->refreshBlocksBuilded();
 		}
 
 		private function _cmp($a, $b) {
@@ -269,7 +251,7 @@
 
 		public function setTemplateAlias($blockTemplateAlias) {
 			$this->templateAlias = $blockTemplateAlias;
-			$this->refreshBlockTemplateBuilded(false);
+			$this->templateDirty = true;
 			return $this;
 		}
 

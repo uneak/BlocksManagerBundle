@@ -15,6 +15,7 @@
         protected $blocksManager;
         protected $container;
         protected $blocks = array();
+        protected $templateBuildCount = 0;
 
 
         public function __construct(TemplatesManager $templatesManager,BlocksManager $blocksManager, BlockTemplatesManager $blockTemplatesManager, ContainerInterface $container) {
@@ -24,6 +25,24 @@
             $this->blocksManager = $blocksManager;
         }
 
+
+        public function debug() {
+            $str = "";
+            $str .= "<ul>";
+            foreach ($this->blocks as $id => $block) {
+                $str .= "<li>";
+                $str .= $id;
+                if (!is_string($block)) {
+                    $str .= $block->debug();
+                } else {
+                    $str .= ":".$block.":";
+                }
+                $str .= "</li>";
+            }
+            $str .= "</ul>";
+
+            return $str;
+        }
 
         public function addBlock($id, $block, $override = true) {
             if ($override || !isset($this->blocks[$id])) {
@@ -39,10 +58,7 @@
 
         public function getBlocks() {
             foreach ($this->blocks as $id => $block) {
-                $block = $this->_blockResolver($block);
-                $block->processBuildBlocks($this->blocksManager);
-                $this->blocks[$id] = $block;
-
+                $this->_blockResolver($this->blocks[$id]);
             }
             return $this->blocks;
         }
@@ -57,14 +73,14 @@
                 return null;
             }
 
-            $block = $this->_blockResolver($this->blocks[$id]);
+            $this->_blockResolver($this->blocks[$id]);
+
+
             if ($path) {
-                $block = $this->_getPath($block, $path);
+                $block = $this->_getPath($this->blocks[$id], $path);
             }
 
-            $block->processBuildBlocks($this->blocksManager);
-
-            return $block;
+            return $this->blocks[$id];
 
         }
 
@@ -77,8 +93,6 @@
                 // TODO: exeption
                 return null;
             }
-            $childBlock = $this->_blockResolver($childBlock);
-            $childBlock->setParentBlock($block);
 
             if ($path) {
                 return $this->_getPath($childBlock, $path);
@@ -107,46 +121,50 @@
 
         //
         //
-        public function processBuildAssets(AssetsBuilderManager $builder) {
-            $blocks = $this->getBlocks();
 
+
+        public function processBuildAssets(AssetsBuilderManager $builder) {
+
+            $this->templateBuildCount = 0;
+
+            $blocks = $this->getBlocks();
             foreach ($blocks as $block) {
-//                if (is_string($block)) {
-//                    die($block);
-//                }
                 $this->_fetchAssets($builder, $block);
             }
+
         }
 
         private function _fetchAssets(AssetsBuilderManager $builder, BlockInterface $block) {
-            if (!$block->isBlockTemplateBuilded()) {
+            if ($block->isTemplateDirty()) {
                 $blockTemplate = $this->blockTemplatesManager->getTemplate($block->getTemplateAlias());
 
                 if (null !== $blockTemplate) {
                     $blockTemplate->buildAsset($builder, $block);
                 }
-                $block->refreshBlockTemplateBuilded(true);
+
+                $this->templateBuildCount++;
+
+                $block->setTemplateDirty(false);
             }
 
             $blocks = $block->getBlocks();
             foreach ($blocks as $block) {
-//                if (is_string($block)) {
-//                    die($block);
-//                }
                 $this->_fetchAssets($builder, $block);
             }
         }
 
 
 
-        private function _blockResolver($block) {
+        private function _blockResolver(&$block) {
             if (is_string($block)) {
                 $block = $this->blocksManager->getBlock($block);
             }
             if (!$block instanceof Block) {
                 // TODO: exeption
             }
-            return $block;
+
+            $block->processBuildBlocks($this->blocksManager);
+
         }
 
     }

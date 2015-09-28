@@ -4,7 +4,14 @@
 
 
 	interface BlockInterface {
+
+		public function isTemplateDirty();
+		public function setTemplateDirty($templateDirty);
+
+		public function debugBuild();
+
 		public function processBuildBlocks(BlocksManager $blocksManager);
+		public function postBuild(BlocksManager $blocksManager);
 
 		public function getTemplateAlias();
 		public function setTemplateAlias($blockTemplateAlias);
@@ -18,9 +25,5 @@
 		public function hasBlock($id);
 		public function removeBlock($id);
 
-		public function isBlocksBuilded();
-		public function refreshBlocksBuilded();
-
-		public function isBlockTemplateBuilded();
-		public function refreshBlockTemplateBuilded($templateBuilded = null);
+		public function debug();
 	}
