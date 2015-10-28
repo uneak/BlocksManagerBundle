@@ -3,7 +3,7 @@ parameters:
     uneak.blocksmanager.templates.class: Uneak\BlocksManagerBundle\Blocks\BlockTemplatesManager
     uneak.blocksmanager.builder.class: Uneak\BlocksManagerBundle\Blocks\BlockBuilder
     uneak.blocksmanager.twig.extension.class: Uneak\BlocksManagerBundle\Twig\Extension\BlocksManagerExtension
-
+    uneak.jsarray.twig.extension.class: Uneak\BlocksManagerBundle\Twig\Extension\JsArrayExtension
 
 services:
 
@@ -34,6 +34,11 @@ services:
             - @uneak.blocksmanager.templates
             - @uneak.templatesmanager
             - @twig
+        tags:
+            - { name: twig.extension }
+
+    uneak.jsarray.twig.extension:
+        class: %uneak.jsarray.twig.extension.class%
         tags:
             - { name: twig.extension }
 
