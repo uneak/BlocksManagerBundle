@@ -112,11 +112,13 @@
 
 
 
-        public function render($id, array $parameters = array(), Response $response = null) {
-//            return $this->templating->renderResponse('{{ renderBlock("'.$id.'",'.$parameters.') }}', $parameters, $response);
+        public function renderResponse($id, array $parameters = array(), Response $response = null) {
             return $this->container->get('templating')->renderResponse('{{ renderBlock("'.$id.'") }}', $parameters, $response);
         }
 
+        public function render($id, array $parameters = array()) {
+            return $this->container->get('templating')->render('{{ renderBlock("'.$id.'") }}', $parameters);
+        }
 
 
         //
